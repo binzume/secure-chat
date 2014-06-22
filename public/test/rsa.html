@@ -1,0 +1,102 @@
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<link rel=stylesheet type="text/css" href="css/form.css" />
+	<link rel=stylesheet type="text/css" href="css/list.css" />
+	<link rel=stylesheet type="text/css" href="css/layout_simple.css" />
+	<script type="text/javascript" src="../js/jsencrypt.min.js"></script>
+	<script type="text/javascript" src="../js/sha1.js"></script>
+	<script type="text/javascript" src="../js/rsasign.js"></script>
+	<script type="text/javascript" src="../js/sshkey.js"></script>
+	<title>css-lib sample</title>
+	<script>
+
+	window.addEventListener('load',(function(e){
+		document.getElementById('generate').addEventListener('click',function(e){
+			var crypt = new JSEncrypt({default_key_size: 1024});
+			console.log(crypt.getKey());
+			document.getElementById('private_key').value = crypt.getPrivateKey();
+			document.getElementById('public_key').value = crypt.getPublicKey()
+			document.getElementById('ssh_key').value = sshkey(crypt.getKey());
+		});
+		document.getElementById('sign').addEventListener('click',function(e){
+			var crypt = new JSEncrypt({default_key_size: 1024});
+			crypt.setKey(document.getElementById('private_key').value);
+			document.getElementById('signature').value = sign(crypt.getKey(),document.getElementById('sign_message').value );
+		});
+
+		document.getElementById('verify').addEventListener('click',function(e){
+			var crypt = new JSEncrypt({default_key_size: 1024});
+			crypt.setKey(document.getElementById('public_key').value);
+			document.getElementById('verify_result').value = verify(crypt.getKey(),document.getElementById('signature').value, document.getElementById('sign_message').value );
+		});
+
+	}),false)
+
+	</script>
+</head>
+<body>
+
+<div id="content">
+
+<h2>RSA test</h2>
+
+<fieldset class="group">
+<legend>RSA key</legend>
+
+<p>
+Key: 
+<select id="key_length" class="attach_right">
+<option value="512">512bit</OPTION>
+<option value="1024" selected>1024bit</OPTION>
+<option value="2048">2048bit</OPTION>
+</select><button class="submit" id="generate">Generate</button>
+
+<h3>Private Key</h3>
+<textarea id="private_key">
+</textarea>
+
+<h3>Public Key</h3>
+<textarea id="public_key">
+</textarea>
+
+<h3>SSH Pub Key</h3>
+<textarea id="ssh_key">
+</textarea>
+
+</p>
+
+</fieldset>
+
+<fieldset class="group">
+
+<legend>Sign</legend>
+
+<ul>
+<li>Sign using private key.</li>
+<li>Verify using public key.</li>
+</ul>
+
+<h3>Message to sign & verify</h3>
+
+<textarea id="sign_message">hoge</textarea>
+
+<button id="sign" class="submit">Sign</button>
+
+
+<h3>RSASSA-PSS Signature </h3>
+
+<textarea id="signature">
+</textarea>
+
+<button id="verify">Verify</button>
+<input type="text" id="verify_result" />
+</fieldset>
+
+</div>
+
+
+</body>
+</html>
+
+

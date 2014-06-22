@@ -1,0 +1,69 @@
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<link rel=stylesheet type="text/css" href="css/form.css" />
+	<link rel=stylesheet type="text/css" href="css/list.css" />
+	<link rel=stylesheet type="text/css" href="css/layout_simple.css" />
+	<script type="text/javascript" src="js/jsencrypt.min.js"></script>
+	<script type="text/javascript" src="js/sha1.js"></script>
+	<script type="text/javascript" src="js/rsasign.js"></script>
+	<script type="text/javascript" src="js/sshkey.js"></script>
+	<title>secure chat client</title>
+	<script>
+
+	window.addEventListener('load',(function(e){
+		document.getElementById('login').addEventListener('dragover',function(e){
+			e.preventDefault();
+		});
+		document.getElementById('login').addEventListener('drop',function(e){
+			e.preventDefault();
+			var file = e.dataTransfer.files[0];
+			if (file.size > 1024*1024) {
+				document.getElementById('debug_msg').innerText="Too Large";
+				return;
+			}
+			if (!file.name.match(/\.pem$/)) {
+				document.getElementById('debug_msg').innerText=".pem file only";
+				return;
+			}
+			var reader = new FileReader();
+			reader.onload = (function(e){
+				console.log("pem"+e.target.result);
+				var crypt = new JSEncrypt({default_key_size: 1024});
+				crypt.setKey(e.target.result);
+				document.getElementById('debug_msg').innerText="OK : " + sshkey(crypt.getKey());
+			});
+			reader.readAsText(file);
+		});
+	}),false)
+
+	</script>
+</head>
+<body>
+
+<div id="content">
+
+<h2>...</h2>
+
+<fieldset class="group" id="login">
+ <legend>Login</legend>
+
+ <ul>
+  <li>Support Chrome browser only...</li>
+  <li>Please login (or sign-up) by drag & drop your .pem file here!</li>
+  <li>TODO: generate key tool.</li>
+ </ul>
+ <div id="debug_msg"></div>
+</fieldset>
+
+<a href="test/rsa.html">RSA TEST</a>
+
+
+
+</div>
+
+
+</body>
+</html>
+
+
