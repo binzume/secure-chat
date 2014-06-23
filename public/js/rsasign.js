@@ -1,16 +1,18 @@
 /*
-  RSASSA-PSS library (BUGGY!)
+  RSASSA-PSS library
   Copyright (c) 2014 Kousuke Kawahira
   License: MIT License.
 */
+
+function hex2(i) {
+    return (i < 16 ? "0":"") + i.toString(16);
+}
 
 function hex_xor(a, b) {
 	var len = a.length/2;
 	var ret = "";
 	for (var i = 0; i < len; i++) {
-		var c = (parseInt(a.substr(i*2,2),16) ^ parseInt(b.substr(i*2,2),16)).toString(16);
-		if (c.length < 2) c = "0" + c;
-		ret += c;
+		ret += hex2(parseInt(a.substr(i*2,2),16) ^ parseInt(b.substr(i*2,2),16));
 	}
 	return ret;
 }
@@ -72,24 +74,22 @@ function pss_encode(key, msg) {
 	}
 	// 10
 	var maskedDB = hex_xor(DB, T);
-	console.log(maskedDB);
-	
-	maskedDB = "0" + maskedDB.substr(1);  // FIXME!
+
+	// 11
+	var msb = parseInt(maskedDB.substr(0,2), 16);
+	msb &= (0xff >> (8*emLen - emBits));
+	maskedDB = hex2(msb) + maskedDB.substr(2);
 
 	// 12
 	var EM = maskedDB + H + "bc";
 
-	console.log("mHash:"+mHash);
-
-
-	return EM; // FIXME!
+	return EM;
 }
 
 function sign(key, msg) {
 	var em = pss_encode(key, msg);
 	var b = key.n.clone();
 	b.fromRadix(em,16);
-	
 	return key.doPrivate(b).toString(16);
 }
 
@@ -127,12 +127,21 @@ function verify(key, sig, msg) {
 	}
 	// 10
 	var DB = hex_xor(maskedDB, T);
-	DB = "0" + DB.substr(1);  // FIXME!
-	console.log(DB);
+
+    // 11
+	var msb = parseInt(DB.substr(0,2), 16);
+	msb &= (0xff >> (8*emLen - emBits));
+	DB = hex2(msb) + DB.substr(2);
 
 	var salt = sLen > 0 ? DB.substr(-sLen*2) : "";
 
-	// todo check DB
+	// check DB
+	for (var i = 0; i < emLen - sLen - hLen - 2; i++) {
+	    if (DB.substr(i*2,2) != "00") {
+    		console.log("db != 00");
+	        return false;
+	    }
+	}
 
 	console.log("DB:"+DB);
 	console.log("salt:"+salt);
